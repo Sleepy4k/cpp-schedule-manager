@@ -19,6 +19,11 @@ int main() {
       handler.handle_login("user");
       break;
     case 3:
+      handler.handle_register();
+      
+      main();
+      break;
+    case 4:
       cout << "\n\nThank You For Using Schedule Management System" << endl;
       exit(0);
       break;
