@@ -1,2 +1,2 @@
-g++ ./src/main.cpp ./src/control/handler.cpp ./src/control/admin.cpp -o ./output/main.exe
+g++ -std=c++11 ./src/main.cpp ./src/control/handler.cpp ./src/control/admin.cpp -o ./output/main.exe
 ./output/main.exe
