@@ -11,8 +11,12 @@ class Handler {
       string role;
     };
   public:
-    int main_menu();
+    void main_menu();
     string generate_uuid();
-    void handle_login(string role);
+    string handle_login(string role);
     void handle_register();
+    bool is_data_numeric(string data);
+    bool validate_date(string date);
+    bool validate_string(string text);
+    bool validate_uid(string text);
 };
