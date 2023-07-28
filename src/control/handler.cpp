@@ -4,9 +4,76 @@
 #include <vector>
 #include <ctime>
 #include <stdlib.h>
+#include "../include/admin.hpp"
+#include "../include/faculty.hpp"
 #include "../include/handler.hpp"
 
 using namespace std;
+
+bool Handler::is_data_numeric(string data) {
+  for (int i = 0; i < data.length(); i++) {
+    if (!isdigit(data[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool Handler::validate_date(string date) {
+  string delimiter = "/";
+
+  string day = date.substr(0, date.find(delimiter));
+  date.erase(0, date.find(delimiter) + 1);
+
+  string month = date.substr(0, date.find(delimiter));
+  date.erase(0, date.find(delimiter) + 1);
+
+  string year = date.substr(0, date.find(delimiter));
+  date.erase(0, date.find(delimiter) + 1);
+
+  if (!Handler::is_data_numeric(day) || !Handler::is_data_numeric(month) || !Handler::is_data_numeric(year)) {
+    return false;
+  }
+
+  if (day.length() != 2 || month.length() != 2 || year.length() != 4) {
+    return false;
+  }
+
+  if (stoi(day) < 1 || stoi(day) > 31) {
+    return false;
+  }
+
+  if (stoi(month) < 1 || stoi(month) > 12) {
+    return false;
+  }
+
+  if (stoi(year) < 1000 || stoi(year) > 9999) {
+    return false;
+  }
+
+  return true;
+}
+
+bool Handler::validate_string(string text) {
+  for (int i = 0; i < text.length(); i++) {
+    if (!isalpha(text[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool Handler::validate_uid(string text) {
+  for (int i = 0; i < text.length(); i++) {
+    if (!isalnum(text[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 string Handler::generate_uuid() {
   srand(time(NULL));
@@ -20,9 +87,9 @@ string Handler::generate_uuid() {
   return uuid;
 }
 
-void Handler::handle_login(string access) {
+string Handler::handle_login(string access) {
   bool valid = false;
-  string username, password;
+  string id, username, password;
   vector<UserRecord> users_data;
 
   cout << "\nPlease Enter Your Username & Password For Authentiocation";
@@ -75,6 +142,7 @@ void Handler::handle_login(string access) {
 
   for (int i = 0; i < users_data.size(); i++) {
     if (users_data[i].username == username && users_data[i].password == password && users_data[i].role == access) {
+      id = users_data[i].uid;
       valid = true;
       break;
     }
@@ -82,6 +150,8 @@ void Handler::handle_login(string access) {
 
   if (valid) {
     cout << "\n\nLogin Successful" << endl;
+
+    return id;
   } else {
     cout << "\n\nLogin Failed" << endl;
     cout << "\nPlease Try Again" << endl;
@@ -168,7 +238,7 @@ void Handler::handle_register() {
   cout << "\n\nRegistration Successful" << endl;
 }
 
-int Handler::main_menu() {
+void Handler::main_menu() {
   int choice;
 
   cout << "\n\n--------------------------------------------------------------------" << endl;
@@ -201,5 +271,33 @@ int Handler::main_menu() {
     }
   }
 
-  return choice;
+  switch (choice) {
+    case 1: {
+      Handler::handle_login("admin");
+
+      Admin admin;
+      admin.show_menu();
+      break;
+    }
+    case 2: {
+      string id = Handler::handle_login("user");
+
+      Faculty faculty(id);
+      faculty.show_menu();
+      break;
+    }
+    case 3: {
+      Handler::handle_register();
+      
+      Handler::main_menu();
+      break;
+    }
+    case 4: {
+      cout << "\n\nThank You For Using Schedule Management System" << endl;
+      exit(0);
+      break;
+    }
+    default:
+      break;
+  }
 }

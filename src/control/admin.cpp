@@ -7,71 +7,6 @@
 
 using namespace std;
 
-bool Admin::is_data_numeric(string data) {
-  for (int i = 0; i < data.length(); i++) {
-    if (!isdigit(data[i])) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-bool Admin::validate_date(string date) {
-  string delimiter = "/";
-
-  string day = date.substr(0, date.find(delimiter));
-  date.erase(0, date.find(delimiter) + 1);
-
-  string month = date.substr(0, date.find(delimiter));
-  date.erase(0, date.find(delimiter) + 1);
-
-  string year = date.substr(0, date.find(delimiter));
-  date.erase(0, date.find(delimiter) + 1);
-
-  if (!Admin::is_data_numeric(day) || !Admin::is_data_numeric(month) || !Admin::is_data_numeric(year)) {
-    return false;
-  }
-
-  if (day.length() != 2 || month.length() != 2 || year.length() != 4) {
-    return false;
-  }
-
-  if (stoi(day) < 1 || stoi(day) > 31) {
-    return false;
-  }
-
-  if (stoi(month) < 1 || stoi(month) > 12) {
-    return false;
-  }
-
-  if (stoi(year) < 1000 || stoi(year) > 9999) {
-    return false;
-  }
-
-  return true;
-}
-
-bool Admin::validate_string(string text) {
-  for (int i = 0; i < text.length(); i++) {
-    if (!isalpha(text[i])) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-bool Admin::validate_uid(string text) {
-  for (int i = 0; i < text.length(); i++) {
-    if (!isalnum(text[i])) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 void Admin::show_schedule() {
   string line;
   vector<ScheduleStruct> schedule_data;
@@ -132,6 +67,7 @@ void Admin::show_schedule() {
 }
 
 void Admin::add_schedule() {
+  Handler handler;
   string date, subject, faculty;
 
   cout << "\n\nPlease Enter The Following Details To Create New Schedule" << endl;
@@ -146,7 +82,7 @@ void Admin::add_schedule() {
       cout << "\nPlease enter a valid date!!" << endl;
 
       Admin::add_schedule();
-    } else if (Admin::validate_date(date)) {
+    } else if (handler.validate_date(date)) {
       break;
     } else {
       cin.clear();
@@ -167,7 +103,7 @@ void Admin::add_schedule() {
       cout << "\nPlease enter a valid subject!!" << endl;
 
       Admin::add_schedule();
-    } else if (Admin::validate_string(subject)) {
+    } else if (handler.validate_string(subject)) {
       break;
     } else {
       cin.clear();
@@ -188,7 +124,7 @@ void Admin::add_schedule() {
       cout << "\nPlease enter a valid faculty!!" << endl;
 
       Admin::add_schedule();
-    } else if (Admin::validate_string(faculty)) {
+    } else if (handler.validate_string(faculty)) {
       break;
     } else {
       cin.clear();
@@ -211,8 +147,6 @@ void Admin::add_schedule() {
     }
   }
 
-  Handler handler;
-
   string uid = handler.generate_uuid();
 
   file << uid << "," << date << "," << subject << "," << faculty << endl;
@@ -231,6 +165,7 @@ void Admin::add_schedule() {
 void Admin::find_schedule() {
   string id;
   string line;
+  Handler handler;
   bool found = false;
   vector<ScheduleStruct> schedule_data;
   ifstream file("src/data/schedule.csv");
@@ -254,15 +189,15 @@ void Admin::find_schedule() {
       cin.ignore(512, '\n');
       cout << "\nPlease enter a valid UID!!" << endl;
 
-      Admin::add_schedule();
-    } else if (Admin::validate_uid(id)) {
+      Admin::find_schedule();
+    } else if (handler.validate_uid(id)) {
       break;
     } else {
       cin.clear();
       cin.ignore(512, '\n');
       cout << "\nPlease enter a valid UID!!" << endl;
 
-      Admin::add_schedule();
+      Admin::find_schedule();
     }
   }
 
@@ -320,6 +255,7 @@ void Admin::find_schedule() {
 
 void Admin::edit_schedule() {
   string line;
+  Handler handler;
   bool found = false;
   vector<ScheduleStruct> schedule_data;
   vector<ScheduleStruct> n_schedule_data;
@@ -346,7 +282,7 @@ void Admin::edit_schedule() {
       cout << "\nPlease enter a valid UID!!" << endl;
 
       Admin::edit_schedule();
-    } else if (Admin::validate_uid(id)) {
+    } else if (handler.validate_uid(id)) {
       break;
     } else {
       cin.clear();
@@ -393,7 +329,7 @@ void Admin::edit_schedule() {
           cout << "\nPlease enter a valid date!!" << endl;
 
           Admin::edit_schedule();
-        } else if (Admin::validate_date(n_date)) {
+        } else if (handler.validate_date(n_date)) {
           break;
         } else {
           cin.clear();
@@ -414,7 +350,7 @@ void Admin::edit_schedule() {
           cout << "\nPlease enter a valid subject!!" << endl;
 
           Admin::edit_schedule();
-        } else if (Admin::validate_string(n_subject)) {
+        } else if (handler.validate_string(n_subject)) {
           break;
         } else {
           cin.clear();
@@ -435,7 +371,7 @@ void Admin::edit_schedule() {
           cout << "\nPlease enter a valid faculty!!" << endl;
 
           Admin::edit_schedule();
-        } else if (Admin::validate_string(n_faculty)) {
+        } else if (handler.validate_string(n_faculty)) {
           break;
         } else {
           cin.clear();
@@ -482,6 +418,7 @@ void Admin::edit_schedule() {
 
 void Admin::delete_schedule() {
   string line;
+  Handler handler;
   bool found = false;
   vector<ScheduleStruct> schedule_data;
   vector<ScheduleStruct> n_schedule_data;
@@ -508,7 +445,7 @@ void Admin::delete_schedule() {
       cout << "\nPlease enter a valid UID!!" << endl;
 
       Admin::delete_schedule();
-    } else if (Admin::validate_uid(id)) {
+    } else if (handler.validate_uid(id)) {
       break;
     } else {
       cin.clear();
@@ -583,7 +520,7 @@ void Admin::show_menu() {
   cout << "\nHere's your admin Dashboard";
   cout << "\nPlease enter your choice to perform particular tasks" << endl;
   cout << "\n--------------------------------------------------------";
-  cout << "\nEnter 1 -> To Show ALl Schedule" << endl;
+  cout << "\nEnter 1 -> To Show ALL Schedule" << endl;
   cout << "Enter 2 -> To Create New Schedule" << endl;
   cout << "Enter 3 -> To Show spesific Schedule" << endl;
   cout << "Enter 4 -> To Update Existing Schedule" << endl;
@@ -613,25 +550,31 @@ void Admin::show_menu() {
   }
 
   switch (choice) {
-    case 1:
+    case 1: {
       Admin::show_schedule();
       break;
-    case 2:
+    }
+    case 2: {
       Admin::add_schedule();
       break;
-    case 3:
+    }
+    case 3: {
       Admin::find_schedule();
       break;
-    case 4:
+    }
+    case 4: {
       Admin::edit_schedule();
       break;
-    case 5:
+    }
+    case 5: {
       Admin::delete_schedule();
       break;
-    case 6:
+    }
+    case 6: {
       Handler handler;
       handler.main_menu();
       break;
+    }
     default:
       break;
   }
