@@ -57,7 +57,7 @@ bool Handler::validate_date(string date) {
 
 bool Handler::validate_string(string text) {
   for (int i = 0; i < text.length(); i++) {
-    if (!isalpha(text[i])) {
+    if (!isalpha(text[i]) && !isspace(text[i])) {
       return false;
     }
   }
@@ -78,13 +78,65 @@ bool Handler::validate_uid(string text) {
 string Handler::generate_uuid() {
   srand(time(NULL));
   string uuid = "";
-  string characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  string characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  int randomize = 2 + ( std::rand() % ( 5 - 2 + 1 ) );
 
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 6 + randomize; i++) {
     uuid += characters[rand() % characters.length()];
   }
 
   return uuid;
+}
+
+string Handler::input_validation(string prompt, string type, bool is_ws) {
+  string input;
+  bool invalid = false;
+
+  while (true) {
+    cout << prompt;
+    
+    if (is_ws) {
+      getline(cin, input);
+    } else {
+      cin >> input;
+    }
+
+    invalid = type == "date" ? !Handler::validate_date(input) : "string" ? !Handler::validate_string(input) : "uid" ? !Handler::validate_uid(input) : true;
+
+    if (cin.fail() || invalid) {
+      cin.clear();
+      cin.ignore(512, '\n');
+      cout << "\nInvalid input. Please try again." << endl;
+    } else {
+      cin.ignore(512, '\n');
+      break;
+    }
+  }
+
+  return input;
+}
+
+int Handler::menu_validation(int min, int max) {
+  int choice;
+
+  while (true) {
+    cout << "\nPlease Enter Your Choice : ";
+    cin >> choice;
+
+    if (cin.fail()) {
+      cin.clear();
+      cin.ignore(512, '\n');
+      cout << "\nPlease enter a number!!" << endl;
+    } else if (choice >= min && choice <= max) {
+      cin.ignore(512, '\n');
+      break;
+    } else {
+      cin.ignore(512, '\n');
+      cout << "\nPlease enter a number between " << min << " and " << max << "!!" << endl;
+    }
+  }
+
+  return choice;
 }
 
 string Handler::handle_login(string access) {
@@ -239,8 +291,6 @@ void Handler::handle_register() {
 }
 
 void Handler::main_menu() {
-  int choice;
-
   cout << "\n\n--------------------------------------------------------------------" << endl;
   cout << "               Schedule Management System                  " << endl;
   cout << "--------------------------------------------------------------------" << endl;
@@ -250,26 +300,7 @@ void Handler::main_menu() {
   cout << "Press 3 --> Registration User" << endl;
   cout << "Press 4 --> Exit" << endl;
 
-  cout << "\nPlease Enter Your Choice : ";
-  cin >> choice;
-
-  while (true) {
-    if (cin.fail()) {
-      cin.clear();
-      cin.ignore(512, '\n');
-      cout << "\nPlease enter a number!!" << endl;
-
-      Handler::main_menu();
-    } else if (choice >= 1 && choice <= 4) {
-      break;
-    } else {
-      cin.clear();
-      cin.ignore(512, '\n');
-      cout << "\nPlease enter a number between 1 and 4!!" << endl;
-
-      Handler::main_menu();
-    }
-  }
+  int choice = Handler::menu_validation(1, 4);
 
   switch (choice) {
     case 1: {

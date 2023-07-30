@@ -28,25 +28,20 @@ void Faculty::view_schedule() {
   }
 
   while (getline(file, line)) {
+    size_t pos = 0;
     Admin::ScheduleStruct schedule;
-    string uid, date, subject, faculty;
 
-    uid = line.substr(0, line.find(','));
-    line.erase(0, line.find(',') + 1);
+    schedule.uid = line.substr(0, (pos = line.find(',')));
+    line.erase(0, pos + 1);
 
-    date = line.substr(0, line.find(','));
-    line.erase(0, line.find(',') + 1);
+    schedule.date = line.substr(0, (pos = line.find(',')));
+    line.erase(0, pos + 1);
 
-    subject = line.substr(0, line.find(','));
-    line.erase(0, line.find(',') + 1);
+    schedule.subject = line.substr(0, (pos = line.find(',')));
+    line.erase(0, pos + 1);
 
-    faculty = line.substr(0, line.find(','));
-    line.erase(0, line.find(',') + 1);
-
-    schedule.uid = uid;
-    schedule.date = date;
-    schedule.subject = subject;
-    schedule.faculty = faculty;
+    schedule.faculty = line.substr(0, (pos = line.find(',')));
+    line.erase(0, pos + 1);
 
     schedule_data.push_back(schedule);
   }
@@ -55,18 +50,18 @@ void Faculty::view_schedule() {
 
   cout << "\nHere's the list of all schedule (" << schedule_data.size() << " total data)" << endl;
 
-  for (int i = 0; i < schedule_data.size(); i++) {
+  for (const Admin::ScheduleStruct& schedule : schedule_data) {
     cout << "\n--------------------------------------------------------";
-    cout << "\nUID : " << schedule_data[i].uid;
-    cout << "\nDate : " << schedule_data[i].date;
-    cout << "\nSubject : " << schedule_data[i].subject;
-    cout << "\nFaculty : " << schedule_data[i].faculty;
+    cout << "\nUID : " << schedule.uid;
+    cout << "\nDate : " << schedule.date;
+    cout << "\nSubject : " << schedule.subject;
+    cout << "\nFaculty : " << schedule.faculty;
     cout << "\n--------------------------------------------------------" << endl;
   }
 
   cout << "\nPress Enter To Continue" << endl;
-  cin.ignore();
-  cin.get();
+  std::cin.ignore();
+  std::cin.get();
 
   Faculty::show_menu();
 };
@@ -88,25 +83,20 @@ void Faculty::view_training() {
   }
 
   while (getline(file, line)) {
+    size_t pos = 0;
     TrainingStruct training;
-    string uid, userID, scheduleID, date;
 
-    uid = line.substr(0, line.find(','));
-    line.erase(0, line.find(',') + 1);
+    training.uid = line.substr(0, (pos = line.find(',')));
+    line.erase(0, pos + 1);
 
-    userID = line.substr(0, line.find(','));
-    line.erase(0, line.find(',') + 1);
+    training.userID = line.substr(0, (pos = line.find(',')));
+    line.erase(0, pos + 1);
 
-    scheduleID = line.substr(0, line.find(','));
-    line.erase(0, line.find(',') + 1);
+    training.scheduleID = line.substr(0, (pos = line.find(',')));
+    line.erase(0, pos + 1);
 
-    date = line.substr(0, line.find(','));
-    line.erase(0, line.find(',') + 1);
-
-    training.uid = uid;
-    training.userID = userID;
-    training.scheduleID = scheduleID;
-    training.date = date;
+    training.date = line.substr(0, (pos = line.find(',')));
+    line.erase(0, pos + 1);
 
     if (training.userID == Faculty::userId) {
       training_data.push_back(training);
@@ -117,12 +107,12 @@ void Faculty::view_training() {
 
   cout << "\nHere's the list of your training (" << training_data.size() << " total data)" << endl;
 
-  for (int i = 0; i < training_data.size(); i++) {
+  for (const TrainingStruct& training : training_data) {
     cout << "\n--------------------------------------------------------";
-    cout << "\nUID : " << training_data[i].uid;
-    cout << "\nUser ID : " << training_data[i].userID;
-    cout << "\nSchedule ID : " << training_data[i].scheduleID;
-    cout << "\nDate : " << training_data[i].date;
+    cout << "\nUID : " << training.uid;
+    cout << "\nUser ID : " << training.userID;
+    cout << "\nSchedule ID : " << training.scheduleID;
+    cout << "\nDate : " << training.date;
     cout << "\n--------------------------------------------------------" << endl;
   }
 
@@ -136,44 +126,11 @@ void Faculty::view_training() {
 void Faculty::add_training() {
   Handler handler;
   string scheduleID;
+  bool found = false;
 
-  cout << "\n\nPlease Enter The Following Details To Create New Training" << endl;
+  scheduleID = handler.input_validation("\nPlease Enter The Following Schedule UID To Add Training: ", "uid", false);
 
-  cout << "Enter Schedule UID : ";
-  cin >> scheduleID;
-
-  while (true) {
-    if (cin.fail()) {
-      cin.clear();
-      cin.ignore(512, '\n');
-      cout << "\nPlease enter a valid schedule UID!!" << endl;
-
-      Faculty::add_training();
-    } else if (handler.validate_uid(scheduleID)) {
-      break;
-    } else {
-      cin.clear();
-      cin.ignore(512, '\n');
-      cout << "\nPlease enter a valid schedule UID!!" << endl;
-
-      Faculty::add_training();
-    }
-  }
-
-  ofstream file("src/data/training.csv", ios::app);
-
-  if (!file) {
-    fstream outfile("src/data/training.csv", ios::app);
-
-    if (!outfile) {
-      outfile.close();
-      cerr << "Error opening file" << endl;
-      Faculty::show_menu();
-    }
-  }
-
-  string line;
-  string scheduleDate;
+  string line, scheduleDate;
   ifstream input("src/data/schedule.csv");
 
   if (!input) {
@@ -187,41 +144,53 @@ void Faculty::add_training() {
   }
 
   while (getline(input, line)) {
+    size_t pos = 0;
     Admin::ScheduleStruct schedule;
-    string uid, date, subject, faculty;
 
-    uid = line.substr(0, line.find(','));
-    line.erase(0, line.find(',') + 1);
+    schedule.uid = line.substr(0, (pos = line.find(',')));
+    line.erase(0, pos + 1);
 
-    date = line.substr(0, line.find(','));
-    line.erase(0, line.find(',') + 1);
+    schedule.date = line.substr(0, (pos = line.find(',')));
+    line.erase(0, pos + 1);
 
-    subject = line.substr(0, line.find(','));
-    line.erase(0, line.find(',') + 1);
+    schedule.subject = line.substr(0, (pos = line.find(',')));
+    line.erase(0, pos + 1);
 
-    faculty = line.substr(0, line.find(','));
-    line.erase(0, line.find(',') + 1);
-
-    schedule.uid = uid;
-    schedule.date = date;
-    schedule.subject = subject;
-    schedule.faculty = faculty;
+    schedule.faculty = line.substr(0, (pos = line.find(',')));
+    line.erase(0, pos + 1);
 
     if (schedule.uid == scheduleID) {
       scheduleDate = schedule.date;
+      found = true;
       break;
     }
   }
 
   input.close();
 
-  string uid = handler.generate_uuid();
+  if (!found) {
+    cout << "\nSchedule Not Found" << endl;
+  } else {
+    ofstream file("src/data/training.csv", ios::app);
 
-  file << uid << "," << Faculty::userId << "," << scheduleID << "," << scheduleDate << endl;
+    if (!file) {
+      fstream outfile("src/data/training.csv", ios::app);
 
-  file.close();
+      if (!outfile) {
+        outfile.close();
+        cerr << "Error opening file" << endl;
+        Faculty::show_menu();
+      }
+    }
 
-  cout << "\nTraining Created Successfully" << endl;
+    string uid = handler.generate_uuid();
+
+    file << uid << "," << Faculty::userId << "," << scheduleID << "," << scheduleDate << endl;
+
+    file.close();
+
+    cout << "\nTraining Created Successfully" << endl;
+  }
 
   cout << "\nPress Enter To Continue" << endl;
   cin.ignore();
@@ -231,13 +200,11 @@ void Faculty::add_training() {
 }
 
 void Faculty::cancel_training() {
-  string line;
+  string id, line;
   Handler handler;
   bool found = false;
   vector<TrainingStruct> training_data;
-  vector<TrainingStruct> n_training_data;
   ifstream file("src/data/training.csv");
-  string id;
 
   if (!file) {
     fstream outfile("src/data/training.csv", ios::app);
@@ -249,54 +216,31 @@ void Faculty::cancel_training() {
     }
   }
 
-  cout << "\n\nPlease Enter The Following UID To Delete Training: ";
-  cin >> id;
-
-  while (true) {
-    if (cin.fail()) {
-      cin.clear();
-      cin.ignore(512, '\n');
-      cout << "\nPlease enter a valid UID!!" << endl;
-
-      Faculty::cancel_training();
-    } else if (handler.validate_uid(id)) {
-      break;
-    } else {
-      cin.clear();
-      cin.ignore(512, '\n');
-      cout << "\nPlease enter a valid UID!!" << endl;
-
-      Faculty::cancel_training();
-    }
-  }
+  id = handler.input_validation("\nPlease Enter The Following UID To Edit Schedule: ", "uid", false);
 
   while (getline(file, line)) {
+    size_t pos = 0;
     TrainingStruct training;
-    string uid, userID, scheduleID, date;
 
-    uid = line.substr(0, line.find(','));
-    line.erase(0, line.find(',') + 1);
+    training.uid = line.substr(0, (pos = line.find(',')));
+    line.erase(0, pos + 1);
 
-    userID = line.substr(0, line.find(','));
-    line.erase(0, line.find(',') + 1);
+    training.userID = line.substr(0, (pos = line.find(',')));
+    line.erase(0, pos + 1);
 
-    scheduleID = line.substr(0, line.find(','));
-    line.erase(0, line.find(',') + 1);
+    training.scheduleID = line.substr(0, (pos = line.find(',')));
+    line.erase(0, pos + 1);
 
-    date = line.substr(0, line.find(','));
-    line.erase(0, line.find(',') + 1);
-
-    training.uid = uid;
-    training.userID = userID;
-    training.scheduleID = scheduleID;
-    training.date = date;
+    training.date = line.substr(0, (pos = line.find(',')));
+    line.erase(0, pos + 1);
 
     training_data.push_back(training);
   }
 
-  for (int i = 0; i < training_data.size(); i++) {
-    if (training_data[i].uid != id) {
-      n_training_data.push_back(training_data[i]);
+  vector<TrainingStruct> n_training_data;
+  for (const TrainingStruct& training : training_data) {
+    if (training.uid != id) {
+      n_training_data.push_back(training);
     } else {
       found = true;
     }
@@ -312,8 +256,8 @@ void Faculty::cancel_training() {
       Faculty::show_menu();
     }
 
-    for (int i = 0; i < n_training_data.size(); i++) {
-      n_file << n_training_data[i].uid << "," << n_training_data[i].userID << "," << n_training_data[i].scheduleID << "," << n_training_data[i].date << endl;
+    for (const TrainingStruct& training : n_training_data) {
+      n_file << training.uid << "," << training.userID << "," << training.scheduleID << "," << training.date << endl;
     }
 
     n_file.close();
@@ -329,8 +273,6 @@ void Faculty::cancel_training() {
 }
 
 void Faculty::show_menu() {
-  int choice;
-
   cout << "\nHere's your faculty Dashboard";
   cout << "\nPlease enter your choice to perform particular tasks" << endl;
   cout << "\n--------------------------------------------------------";
@@ -341,26 +283,8 @@ void Faculty::show_menu() {
   cout << "Enter 5 -> To Quit From This Session" << endl;
   cout << "--------------------------------------------------------" << endl;
 
-  cout << "\nPlease Enter Your Choice : ";
-  cin >> choice;
-
-  while (true) {
-    if (cin.fail()) {
-      cin.clear();
-      cin.ignore(512, '\n');
-      cout << "\nPlease enter a number!!" << endl;
-
-      Faculty::show_menu();
-    } else if (choice >= 1 && choice <= 5) {
-      break;
-    } else {
-      cin.clear();
-      cin.ignore(512, '\n');
-      cout << "\nPlease enter a number between 1 and 6!!" << endl;
-
-      Faculty::show_menu();
-    }
-  }
+  Handler handler;
+  int choice = handler.menu_validation(1, 5);
 
   switch (choice) {
     case 1: {
